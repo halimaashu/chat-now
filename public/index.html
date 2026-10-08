@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat || now</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #eef2f1;
+            --panel: #ffffff;
+            --ink: #15211f;
+            --muted: #6b7b78;
+            --line: #dde5e3;
+            --mine: #0f766e;
+            --mine-ink: #ffffff;
+            --theirs: #eef2f1;
+            --accent: #f2b134;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0d1514;
+                --panel: #142120;
+                --ink: #e8f0ee;
+                --muted: #8aa09c;
+                --line: #243735;
+                --mine: #14b8a6;
+                --mine-ink: #04201d;
+                --theirs: #1c2e2c;
+            }
+        }
+        * { box-sizing: border-box; margin: 0; }
+        html, body { height: 100%; }
+        body {
+            font-family: "Figtree", system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--ink);
+            display: grid;
+            place-items: center;
+            padding: 16px;
+        }
+        .chat {
+            width: 100%;
+            max-width: 640px;
+            height: min(100%, 780px);
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 20px 50px -20px rgba(15, 50, 45, .25);
+        }
+        header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--line);
+        }
+        .logo {
+            width: 40px; height: 40px;
+            border-radius: 12px;
+            background: var(--mine);
+            color: var(--mine-ink);
+            display: grid; place-items: center;
+            font-family: "Bricolage Grotesque", sans-serif;
+            font-weight: 700; font-size: 20px;
+        }
+        h1 {
+            font-family: "Bricolage Grotesque", sans-serif;
+            font-size: 20px; font-weight: 700; line-height: 1.1;
+        }
+        .status { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 6px; margin-top: 2px; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+        .online .dot { background: #22c55e; }
+
+        #message-box {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            scroll-behavior: smooth;
+        }
+        .empty {
+            margin: auto;
+            text-align: center;
+            color: var(--muted);
+            font-size: 15px;
+            max-width: 240px;
+            line-height: 1.5;
+        }
+        .msg {
+            max-width: 78%;
+            padding: 10px 14px;
+            border-radius: 16px;
+            background: var(--theirs);
+            border-bottom-left-radius: 4px;
+            align-self: flex-start;
+            line-height: 1.45;
+            overflow-wrap: anywhere;
+            animation: pop .18s ease-out;
+        }
+        .msg.mine {
+            align-self: flex-end;
+            background: var(--mine);
+            color: var(--mine-ink);
+            border-radius: 16px;
+            border-bottom-right-radius: 4px;
+        }
+        .msg time { display: block; font-size: 11px; opacity: .6; margin-top: 3px; }
+        .msg.mine time { text-align: right; }
+        @keyframes pop { from { opacity: 0; transform: scale(.96); } to { opacity: 1; transform: none; } }
+
+        .composer {
+            display: flex;
+            gap: 10px;
+            padding: 14px 16px;
+            border-top: 1px solid var(--line);
+        }
+        #messageInput {
+            flex: 1;
+            font: inherit;
+            color: inherit;
+            background: var(--bg);
+            border: 1px solid transparent;
+            border-radius: 999px;
+            padding: 12px 18px;
+        }
+        #messageInput::placeholder { color: var(--muted); }
+        #messageInput:focus { outline: none; border-color: var(--mine); }
+        #sendButton {
+            font: inherit; font-weight: 600;
+            border: 0;
+            border-radius: 999px;
+            padding: 0 24px;
+            background: var(--mine);
+            color: var(--mine-ink);
+            cursor: pointer;
+            transition: transform .1s, opacity .15s;
+        }
+        #sendButton:hover { opacity: .9; }
+        #sendButton:active { transform: scale(.96); }
+        #sendButton:disabled { opacity: .4; cursor: not-allowed; }
+        #sendButton:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+        .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+        @media (max-width: 520px) {
+            body { padding: 0; }
+            .chat { border-radius: 0; border: 0; height: 100%; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .msg { animation: none; }
+            #message-box { scroll-behavior: auto; }
+        }
+    </style>
+</head>
+<body>
+    <main class="chat">
+        <header>
+            <div class="logo" aria-hidden="true">N</div>
+            <div>
+                <h1>Chat now</h1>
+                <div class="status" id="status"><span class="dot"></span><span id="statusText">Connecting…</span></div>
+            </div>
+        </header>
+
+        <div id="message-box" aria-live="polite">
+            <p class="empty" id="empty">No messages yet. Say hello below.</p>
+        </div>
+
+        <div class="composer">
+            <label for="messageInput" class="sr-only">Message</label>
+            <input type="text" id="messageInput" placeholder="Type your message" autocomplete="off">
+            <button id="sendButton" disabled>Send</button>
+        </div>
+    </main>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        const messageBox = document.getElementById('message-box');
+        const emptyState = document.getElementById('empty');
+        const status = document.getElementById('status');
+        const statusText = document.getElementById('statusText');
+
+        // Messages I sent; the server echo is matched against these so they show as "mine"
+        const pending = [];
+
+        function addMessage(text, mine) {
+            if (emptyState) emptyState.remove();
+            const div = document.createElement('div');
+            div.className = 'msg' + (mine ? ' mine' : '');
+            const body = document.createElement('span');
+            body.textContent = text; // textContent keeps user input safe from HTML injection
+            const time = document.createElement('time');
+            time.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            div.append(body, time);
+            messageBox.appendChild(div);
+            messageBox.scrollTop = messageBox.scrollHeight;
+        }
+
+        function send() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+            pending.push(message);
+            socket.emit('give the message', message);
+            messageInput.value = '';
+            sendButton.disabled = true;
+            messageInput.focus();
+        }
+
+        sendButton.addEventListener('click', send);
+        messageInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') send(); });
+        messageInput.addEventListener('input', () => {
+            sendButton.disabled = !messageInput.value.trim();
+        });
+
+        socket.on('message', (data) => {
+            const i = pending.indexOf(data);
+            if (i !== -1) pending.splice(i, 1);
+            addMessage(data, i !== -1);
+        });
+
+        socket.on('connect', () => { status.classList.add('online'); statusText.textContent = 'Online'; });
+        socket.on('disconnect', () => { status.classList.remove('online'); statusText.textContent = 'Reconnecting…'; });
+    </script>
+</body>
+</html>
